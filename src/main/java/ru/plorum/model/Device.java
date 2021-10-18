@@ -25,6 +25,12 @@ public class Device {
     @JsonProperty
     Status status;
 
+    @JsonProperty
+    String buttonPin;
+
+    @JsonProperty
+    String ledPin;
+
     GpioController gpio;
 
     GpioPinDigitalInput button;
@@ -33,6 +39,8 @@ public class Device {
 
     public Device(final String buttonPin, final String ledPin) {
         this.id = UUID.randomUUID();
+        this.buttonPin = buttonPin;
+        this.ledPin = ledPin;
         this.status = Status.STANDBY;
         this.gpio = GpioFactory.getInstance();
         this.button = gpio.provisionDigitalInputPin(RaspiPin.getPinByName(buttonPin), PinPullResistance.PULL_DOWN);
