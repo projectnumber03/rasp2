@@ -26,6 +26,10 @@ public class PropertiesService {
         return propertiesRepository.getInt(key);
     }
 
+    public String getString(final String key) {
+        return propertiesRepository.getString(key);
+    }
+
     public List<String> getStringList(final String key) {
         return propertiesRepository.getStringList(key);
     }

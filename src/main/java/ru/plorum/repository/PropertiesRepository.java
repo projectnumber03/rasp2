@@ -21,6 +21,10 @@ public class PropertiesRepository {
         this.config = this.builder.getConfiguration();
     }
 
+    public String getString(final String key) {
+        return config.getString(key);
+    }
+
     public List<String> getStringList(final String key) {
         return config.getList(String.class, key);
     }
