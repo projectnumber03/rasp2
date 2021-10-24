@@ -28,6 +28,8 @@ public class DeviceService {
 
     private PropertiesService propertiesService;
 
+    private volatile boolean isLightOn = false;
+
     public DeviceService(final PropertiesService propertiesService) {
         try {
             this.propertiesService = propertiesService;
@@ -49,6 +51,9 @@ public class DeviceService {
 
     private void monitorAlerts() {
         Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+            if (isLightOn) {
+                return;
+            }
             if (devices.stream().map(Device::getStatus).anyMatch(Device.Status.ALERT::equals)) {
                 this.led.high();
                 return;
@@ -97,11 +102,13 @@ public class DeviceService {
 
     public String lightOn() {
         this.led.high();
+        isLightOn = true;
         return getAll();
     }
 
     public String lightOff() {
         this.led.low();
+        isLightOn = false;
         return getAll();
     }
 
