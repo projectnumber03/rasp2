@@ -27,4 +27,8 @@ public class PropertiesService {
         return propertiesRepository.getArray(key);
     }
 
+    public String getString(final String key) {
+        return propertiesRepository.getString(key);
+    }
+
 }

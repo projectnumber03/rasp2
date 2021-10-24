@@ -23,6 +23,7 @@ public class MainController {
         lightOn();
         lightOff();
         setStatus();
+        setId();
         log.info("== REST has started ==");
     }
 
@@ -62,6 +63,15 @@ public class MainController {
             final String deviceId = request.params(":id");
             log.info("Reset device {} status", deviceId);
             return deviceService.resetStatus(fromString(deviceId));
+        });
+    }
+
+    public void setId() {
+        get("/setId/:id/:pin", (request, response) -> {
+            final String newId = request.params(":id");
+            final String pin = request.params(":pin");
+            log.info("Setting new id {}", newId);
+            return deviceService.setId(fromString(newId), Integer.parseInt(pin));
         });
     }
 

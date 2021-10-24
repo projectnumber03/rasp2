@@ -24,4 +24,8 @@ public class PropertiesRepository {
         return config.getInt(key);
     }
 
+    public String getString(final String key) {
+        return config.getString(key);
+    }
+
 }

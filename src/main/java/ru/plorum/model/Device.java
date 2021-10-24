@@ -1,6 +1,9 @@
 package ru.plorum.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.hazelcast.client.HazelcastClient;
+import com.hazelcast.client.config.ClientConfig;
+import com.hazelcast.core.HazelcastInstance;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import lombok.AccessLevel;
@@ -9,7 +12,11 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
+
+import static com.pi4j.wiringpi.Gpio.millis;
 
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
@@ -37,7 +44,11 @@ public class Device {
 
     GpioPinDigitalOutput led;
 
-    public Device(final String buttonPin, final String ledPin) {
+    HazelcastInstance hazelcastInstanceClient;
+
+    Long buttonTimer = 0L;
+
+    public Device(final String buttonPin, final String ledPin, final String serverAddress) {
         this.id = UUID.randomUUID();
         this.buttonPin = buttonPin;
         this.ledPin = ledPin;
@@ -48,11 +59,14 @@ public class Device {
         this.led.setShutdownOptions(true);
         this.button.setShutdownOptions(true);
         this.button.addListener((GpioPinListenerDigital) event -> {
-            if (event.getState().isLow()) {
+            if (event.getState().isLow() && millis() - buttonTimer > 300) {
+                sendAlertEvent();
                 setStatus(Status.ALERT);
                 lightOn();
+                buttonTimer = millis();
             }
         });
+        this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(serverAddress));
     }
 
     public void lightOn() {
@@ -61,6 +75,22 @@ public class Device {
 
     public void lightOff() {
         this.led.low();
+    }
+
+    public void sendAlertEvent() {
+        final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
+        map.put(this.id, LocalDateTime.now());
+    }
+
+    private ClientConfig getHazelCastConfig(final String serverAddress) {
+        final ClientConfig config = new ClientConfig();
+        config.setClusterName("dev");
+        config.getNetworkConfig().addAddress(serverAddress);
+        config.getConnectionStrategyConfig()
+                .getConnectionRetryConfig()
+                .setInitialBackoffMillis(5000)
+                .setClusterConnectTimeoutMillis(Long.MAX_VALUE);
+        return config;
     }
 
     public enum Status {

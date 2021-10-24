@@ -22,7 +22,8 @@ public class DeviceService {
         try {
             final String[] buttonPins = propertiesService.getArray("button.pins");
             final String[] ledPins = propertiesService.getArray("led.pins");
-            this.devices = IntStream.range(0, Math.min(buttonPins.length, ledPins.length)).boxed().map(i -> new Device(buttonPins[i], ledPins[i])).collect(Collectors.toList());
+            final String serverAddress = propertiesService.getString("server.address");
+            this.devices = IntStream.range(0, Math.min(buttonPins.length, ledPins.length)).boxed().map(i -> new Device(buttonPins[i], ledPins[i], serverAddress)).collect(Collectors.toList());
         } catch (Exception e) {
             log.error("unable to initiate devices", e);
         }
@@ -83,6 +84,17 @@ public class DeviceService {
             return getStatus(id);
         } catch (DeviceNotFoundException e) {
             log.error("unable to light off", e);
+            return "";
+        }
+    }
+
+    public String setId(final UUID newId, final Integer pin) {
+        try {
+            final Device device = devices.get(pin - 1);
+            device.setId(newId);
+            return getStatus(newId);
+        } catch (Exception e) {
+            log.error("unable to set id", e);
             return "";
         }
     }
