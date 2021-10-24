@@ -29,10 +29,6 @@ public class PropertiesRepository {
         return config.getInt(key);
     }
 
-    public String getString(final String key) {
-        return config.getString(key);
-    }
-
     public void saveDevicesId(final List<String> values) throws ConfigurationException {
         config.addProperty("devices.id", values);
         builder.save();

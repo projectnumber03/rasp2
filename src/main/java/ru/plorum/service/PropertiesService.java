@@ -30,10 +30,6 @@ public class PropertiesService {
         return propertiesRepository.getStringList(key);
     }
 
-    public String getString(final String key) {
-        return propertiesRepository.getString(key);
-    }
-
     public void saveDevicesId(final List<String> values) {
         try {
             propertiesRepository.saveDevicesId(values);

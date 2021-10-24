@@ -27,8 +27,7 @@ public class DeviceService {
             final List<String> buttonPins = propertiesService.getStringList("button.pins");
             final List<String> ledPins = propertiesService.getStringList("led.pins");
             final List<String> devicesId = propertiesService.getStringList("devices.id");
-            final String serverAddress = propertiesService.getString("server.address");
-            this.devices = IntStream.range(0, Math.min(buttonPins.size(), ledPins.size())).boxed().map(i -> new Device(propertiesService.getDeviceId(i), buttonPins.get(i), ledPins.get(i), serverAddress)).collect(Collectors.toList());
+            this.devices = IntStream.range(0, Math.min(buttonPins.size(), ledPins.size())).boxed().map(i -> new Device(propertiesService.getDeviceId(i), buttonPins.get(i), ledPins.get(i))).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(devicesId)) {
                 propertiesService.saveDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
             }
