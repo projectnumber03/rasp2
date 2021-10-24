@@ -3,6 +3,7 @@ package ru.plorum.repository;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
+import org.apache.commons.configuration2.convert.DefaultListDelimiterHandler;
 
 import java.io.File;
 
@@ -12,7 +13,7 @@ public class PropertiesRepository {
 
     public void init() throws Exception {
         this.config = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
-                .configure(new Parameters().fileBased().setFile(new File("application.properties")))
+                .configure(new Parameters().fileBased().setFile(new File("application.properties")).setListDelimiterHandler(new DefaultListDelimiterHandler(',')))
                 .getConfiguration();
     }
 
