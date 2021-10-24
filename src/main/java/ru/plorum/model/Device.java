@@ -48,8 +48,8 @@ public class Device {
 
     Long buttonTimer = 0L;
 
-    public Device(final String buttonPin, final String ledPin, final String serverAddress) {
-        this.id = UUID.randomUUID();
+    public Device(final UUID id, final String buttonPin, final String ledPin, final String serverAddress) {
+        this.id = id;
         this.buttonPin = buttonPin;
         this.ledPin = ledPin;
         this.status = Status.STANDBY;

@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import ru.plorum.exception.DeviceNotFoundException;
 import ru.plorum.model.Device;
+import spark.utils.CollectionUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -18,12 +19,19 @@ public class DeviceService {
 
     private List<Device> devices;
 
+    private PropertiesService propertiesService;
+
     public DeviceService(final PropertiesService propertiesService) {
         try {
-            final String[] buttonPins = propertiesService.getArray("button.pins");
-            final String[] ledPins = propertiesService.getArray("led.pins");
+            this.propertiesService = propertiesService;
+            final List<String> buttonPins = propertiesService.getStringList("button.pins");
+            final List<String> ledPins = propertiesService.getStringList("led.pins");
+            final List<String> devicesId = propertiesService.getStringList("devices.id");
             final String serverAddress = propertiesService.getString("server.address");
-            this.devices = IntStream.range(0, Math.min(buttonPins.length, ledPins.length)).boxed().map(i -> new Device(buttonPins[i], ledPins[i], serverAddress)).collect(Collectors.toList());
+            this.devices = IntStream.range(0, Math.min(buttonPins.size(), ledPins.size())).boxed().map(i -> new Device(propertiesService.getDeviceId(i), buttonPins.get(i), ledPins.get(i), serverAddress)).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(devicesId)) {
+                propertiesService.saveDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
+            }
         } catch (Exception e) {
             log.error("unable to initiate devices", e);
         }
@@ -92,6 +100,7 @@ public class DeviceService {
         try {
             final Device device = devices.get(pin - 1);
             device.setId(newId);
+            propertiesService.updateDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
             return getStatus(newId);
         } catch (Exception e) {
             log.error("unable to set id", e);
