@@ -43,18 +43,16 @@ public class MainController {
     }
 
     public void lightOn() {
-        get("/lightOn/:id", (request, response) -> {
-            final String deviceId = request.params(":id");
-            log.info("Turning on the light, deviceId = {}", deviceId);
-            return deviceService.lightOn(fromString(deviceId));
+        get("/lightOn", (request, response) -> {
+            log.info("Turning on the light");
+            return deviceService.lightOn();
         });
     }
 
     public void lightOff() {
-        get("/lightOff/:id", (request, response) -> {
-            final String deviceId = request.params(":id");
-            log.info("Turning off the light, deviceId = {}", deviceId);
-            return deviceService.lightOff(fromString(deviceId));
+        get("/lightOff", (request, response) -> {
+            log.info("Turning off the light");
+            return deviceService.lightOff();
         });
     }
 
