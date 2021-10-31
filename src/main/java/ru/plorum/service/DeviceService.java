@@ -124,4 +124,16 @@ public class DeviceService {
         }
     }
 
+    public String push(final UUID id) {
+        try {
+            final Device device = getDeviceById(id);
+            device.setStatus(Device.Status.ALERT);
+            device.sendAlertEvent();
+            return getStatus(id);
+        } catch (DeviceNotFoundException e) {
+            log.error("unable to push device button", e);
+            return "";
+        }
+    }
+
 }
