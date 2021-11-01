@@ -11,7 +11,14 @@ import ru.plorum.exception.DeviceNotFoundException;
 import ru.plorum.model.Device;
 import spark.utils.CollectionUtils;
 
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -39,7 +46,10 @@ public class DeviceService {
             final String serverAddress = propertiesService.getString("server.address");
             this.led = GpioFactory.getInstance().provisionDigitalOutputPin(RaspiPin.getPinByName(ledPin));
             this.led.setShutdownOptions(true);
-            this.devices = IntStream.range(0, buttonPins.size()).boxed().map(i -> new Device(propertiesService.getDeviceId(i), buttonPins.get(i), serverAddress)).collect(Collectors.toList());
+            this.devices = IntStream.range(0, buttonPins.size()).boxed().map(i -> {
+                final UUID deviceId = Optional.ofNullable(getDeviceIdFromServer(i)).orElse(propertiesService.getDeviceId(i));
+                return new Device(deviceId, buttonPins.get(i), serverAddress);
+            }).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(devicesId)) {
                 propertiesService.saveDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
             }
@@ -132,6 +142,28 @@ public class DeviceService {
             return getStatus(id);
         } catch (DeviceNotFoundException e) {
             log.error("unable to push device button", e);
+            return "";
+        }
+    }
+
+    public UUID getDeviceIdFromServer(final Integer pin) {
+        try {
+            final String serverAddress = propertiesService.getString("server.address");
+            final String serverPort = propertiesService.getString("server.port");
+            final HttpRequest request = HttpRequest.newBuilder().uri(new URI(String.format("http://%s:%s/get-device-id?ip=%s&pin=%d", serverAddress, serverPort, getIp(), pin + 1))).GET().build();
+            return UUID.fromString(HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body());
+        } catch (Exception e) {
+            log.error("unable get device id from server", e);
+            return null;
+        }
+    }
+
+    private String getIp() {
+        try (final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            return socket.getLocalAddress().getHostAddress();
+        } catch (Exception e) {
+            log.error("unable get ip address", e);
             return "";
         }
     }
