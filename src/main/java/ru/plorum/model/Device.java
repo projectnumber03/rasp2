@@ -52,8 +52,7 @@ public class Device {
         this.button.setShutdownOptions(true);
         this.button.addListener((GpioPinListenerDigital) event -> {
             if (event.getState().isLow() && millis() - buttonTimer > 300) {
-                sendAlertEvent();
-                setStatus(Status.ALERT);
+                push();
                 buttonTimer = millis();
             }
         });
@@ -74,6 +73,11 @@ public class Device {
                 .setInitialBackoffMillis(5000)
                 .setClusterConnectTimeoutMillis(Long.MAX_VALUE);
         return config;
+    }
+
+    public void push() {
+        sendAlertEvent();
+        setStatus(Status.ALERT);
     }
 
     public enum Status {
