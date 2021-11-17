@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.LifecycleService;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import lombok.AccessLevel;
@@ -14,6 +15,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.pi4j.wiringpi.Gpio.millis;
@@ -43,7 +45,7 @@ public class Device {
 
     Long buttonTimer = 0L;
 
-    public Device(final UUID id, final String buttonPin, final String serverAddress) {
+    public Device(final UUID id, final String buttonPin) {
         this.id = id;
         this.buttonPin = buttonPin;
         this.status = Status.STANDBY;
@@ -56,12 +58,13 @@ public class Device {
                 buttonTimer = millis();
             }
         });
-        this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(serverAddress));
     }
 
     public void sendAlertEvent() {
-        final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
-        map.put(this.id, LocalDateTime.now());
+        if (Optional.ofNullable(hazelcastInstanceClient).map(HazelcastInstance::getLifecycleService).map(LifecycleService::isRunning).orElse(false)) {
+            final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
+            map.put(this.id, LocalDateTime.now());
+        }
     }
 
     private ClientConfig getHazelCastConfig(final String serverAddress) {
@@ -78,6 +81,10 @@ public class Device {
     public void push() {
         sendAlertEvent();
         setStatus(Status.ALERT);
+    }
+
+    public void setHazelcastInstanceClient(final String serverAddress) {
+        this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(serverAddress));
     }
 
     public enum Status {

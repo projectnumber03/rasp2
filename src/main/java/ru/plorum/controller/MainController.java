@@ -26,6 +26,7 @@ public class MainController {
         setId();
         push();
         log.info("== REST has started ==");
+        deviceService.initHazelcastClients(propertiesService.getString("server.address"));
     }
 
     public void getDeviceList() {

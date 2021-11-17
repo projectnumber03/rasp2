@@ -43,12 +43,11 @@ public class DeviceService {
             final List<String> buttonPins = propertiesService.getStringList("button.pins");
             final String ledPin = propertiesService.getString("led.pin");
             final List<String> devicesId = propertiesService.getStringList("devices.id");
-            final String serverAddress = propertiesService.getString("server.address");
             this.led = GpioFactory.getInstance().provisionDigitalOutputPin(RaspiPin.getPinByName(ledPin));
             this.led.setShutdownOptions(true);
             this.devices = IntStream.range(0, buttonPins.size()).boxed().map(i -> {
                 final UUID deviceId = Optional.ofNullable(getDeviceIdFromServer(i)).orElse(propertiesService.getDeviceId(i));
-                return new Device(deviceId, buttonPins.get(i), serverAddress);
+                return new Device(deviceId, buttonPins.get(i));
             }).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(devicesId)) {
                 propertiesService.saveDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
@@ -57,6 +56,10 @@ public class DeviceService {
         } catch (Exception e) {
             log.error("unable to initiate devices", e);
         }
+    }
+
+    public void initHazelcastClients(final String serverAddress) {
+        devices.forEach(d -> d.setHazelcastInstanceClient(serverAddress));
     }
 
     private void monitorAlerts() {
