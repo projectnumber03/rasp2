@@ -58,8 +58,8 @@ public class DeviceService {
         }
     }
 
-    public void initHazelcastClients(final String serverAddress) {
-        devices.forEach(d -> d.setHazelcastInstanceClient(serverAddress));
+    public void initHazelcastClients() {
+        devices.forEach(d -> d.setHazelcastInstanceClient(propertiesService.getString("server.address")));
     }
 
     private void monitorAlerts() {
