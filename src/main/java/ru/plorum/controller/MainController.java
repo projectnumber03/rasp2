@@ -25,6 +25,7 @@ public class MainController {
         setStatus();
         setId();
         push();
+        ping();
         log.info("== REST has started ==");
         deviceService.initHazelcastClients();
     }
@@ -80,6 +81,13 @@ public class MainController {
             final String deviceId = request.params(":id");
             log.info("Push device {} button", deviceId);
             return deviceService.push(fromString(deviceId));
+        });
+    }
+
+    public void ping() {
+        get("/ping", (request, response) -> {
+            log.info("ping");
+            return deviceService.ping();
         });
     }
 

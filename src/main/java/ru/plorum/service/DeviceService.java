@@ -170,4 +170,8 @@ public class DeviceService {
         }
     }
 
+    public String ping() {
+        return "pong";
+    }
+
 }
