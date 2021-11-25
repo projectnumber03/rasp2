@@ -7,13 +7,14 @@ import ru.plorum.repository.PropertiesRepository;
 import java.util.List;
 import java.util.UUID;
 
-public class PropertiesService {
+public enum  PropertiesService {
+    INSTANCE;
 
-    private static final Logger log = LogManager.getLogger(PropertiesService.class);
+    private final Logger log = LogManager.getLogger(PropertiesService.class);
 
     private PropertiesRepository propertiesRepository;
 
-    public PropertiesService() {
+    PropertiesService() {
         try {
             this.propertiesRepository = new PropertiesRepository();
             this.propertiesRepository.init();
@@ -34,12 +35,8 @@ public class PropertiesService {
         return propertiesRepository.getString(key);
     }
 
-    public void saveDevicesId(final List<String> values) {
-        try {
-            propertiesRepository.saveDevicesId(values);
-        } catch (Exception e) {
-            log.error("unable to save devices id", e);
-        }
+    public Boolean getBoolean(final String key) {
+        return propertiesRepository.getBoolean(key);
     }
 
     public void updateDevicesId(final List<String> values) {

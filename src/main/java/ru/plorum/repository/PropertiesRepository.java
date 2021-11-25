@@ -33,9 +33,8 @@ public class PropertiesRepository {
         return config.getString(key);
     }
 
-    public void saveDevicesId(final List<String> values) throws ConfigurationException {
-        config.addProperty("devices.id", values);
-        builder.save();
+    public Boolean getBoolean(final String key) {
+        return config.getBoolean(key);
     }
 
     public void updateDevicesId(final List<String> values) throws ConfigurationException {

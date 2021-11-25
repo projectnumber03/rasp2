@@ -12,11 +12,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.FieldDefaults;
+import ru.plorum.service.PropertiesService;
 
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.pi4j.wiringpi.Gpio.millis;
 
@@ -34,6 +35,7 @@ public class Device {
     @JsonProperty
     Status status;
 
+    @Setter
     @JsonProperty
     String buttonPin;
 
@@ -46,9 +48,11 @@ public class Device {
     Long buttonTimer = 0L;
 
     public Device(final UUID id, final String buttonPin) {
-        this.id = id;
         this.buttonPin = buttonPin;
         this.status = Status.STANDBY;
+        this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(PropertiesService.INSTANCE.getString("server.address")));
+        this.id = getId(id, buttonPin);
+        if (PropertiesService.INSTANCE.getBoolean("fake.devices")) return;
         this.gpio = GpioFactory.getInstance();
         this.button = gpio.provisionDigitalInputPin(RaspiPin.getPinByName(buttonPin), PinPullResistance.PULL_DOWN);
         this.button.setShutdownOptions(true);
@@ -58,6 +62,26 @@ public class Device {
                 buttonTimer = millis();
             }
         });
+    }
+
+    public void refreshId() {
+        setId(getId(this.id, this.buttonPin));
+    }
+
+    private UUID getId(final UUID id, final String buttonPin) {
+        final Map<String, Map<Integer, UUID>> devices = this.hazelcastInstanceClient.getMap("devices");
+        final List<String> pins = PropertiesService.INSTANCE.getStringList("button.pins");
+        return Optional.ofNullable(devices.getOrDefault(String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port")), Collections.emptyMap())
+                .getOrDefault(pins.indexOf(buttonPin) + 1, null)).orElse(id);
+    }
+
+    private String getIp() {
+        try (final DatagramSocket socket = new DatagramSocket()) {
+            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
+            return socket.getLocalAddress().getHostAddress();
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     public void sendAlertEvent() {
@@ -81,10 +105,6 @@ public class Device {
     public void push() {
         sendAlertEvent();
         setStatus(Status.ALERT);
-    }
-
-    public void setHazelcastInstanceClient(final String serverAddress) {
-        this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(serverAddress));
     }
 
     public enum Status {

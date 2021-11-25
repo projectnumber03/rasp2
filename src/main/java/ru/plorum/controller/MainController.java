@@ -2,93 +2,56 @@ package ru.plorum.controller;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.reflections.Reflections;
+import ru.plorum.model.command.Command;
+import ru.plorum.model.task.Task;
 import ru.plorum.service.DeviceService;
 import ru.plorum.service.PropertiesService;
 
-import static spark.Spark.*;
-import static java.util.UUID.*;
+import java.util.Set;
+
+import static spark.Spark.port;
 
 public class MainController {
 
     private static final Logger log = LogManager.getLogger(MainController.class);
 
-    private final PropertiesService propertiesService = new PropertiesService();
+    private static final String COMMAND_PACKAGE = "ru.plorum.model.command";
 
-    private final DeviceService deviceService = new DeviceService(propertiesService);
+    private static final String TASK_PACKAGE = "ru.plorum.model.task";
 
     public MainController() {
-        port(propertiesService.getInt("application.port"));
-        getDeviceList();
-        getStatus();
-        lightOn();
-        lightOff();
-        setStatus();
-        setId();
-        push();
-        ping();
+        port(PropertiesService.INSTANCE.getInt("application.port"));
+        initCommands();
+        runTasks();
+        log.info("{} devices loaded", DeviceService.INSTANCE.countDevices());
         log.info("== REST has started ==");
-        deviceService.initHazelcastClients();
     }
 
-    public void getDeviceList() {
-        get("/getDeviceList", (request, response) -> {
-            log.info("Getting device list");
-            return deviceService.getAll();
-        });
+    public void initCommands() {
+        final Reflections reflections = new Reflections(COMMAND_PACKAGE);
+        final Set<Class<? extends Command>> commands = reflections.getSubTypesOf(Command.class);
+        for (final Class<? extends Command> c : commands) {
+            try {
+                c.getDeclaredConstructor().newInstance().execute();
+            } catch (Exception e) {
+                log.error("failed to init command {}", c.getName(), e);
+            }
+        }
+        log.info("{} commands loaded", commands.size());
     }
 
-    public void getStatus() {
-        get("/getStatus/:id", (request, response) -> {
-            final String deviceId = request.params(":id");
-            log.info("Getting device {} status", deviceId);
-            return deviceService.getStatus(fromString(deviceId));
-        });
-    }
-
-    public void lightOn() {
-        get("/lightOn", (request, response) -> {
-            log.info("Turning on the light");
-            return deviceService.lightOn();
-        });
-    }
-
-    public void lightOff() {
-        get("/lightOff", (request, response) -> {
-            log.info("Turning off the light");
-            return deviceService.lightOff();
-        });
-    }
-
-    public void setStatus() {
-        get("/setStatus/:id", (request, response) -> {
-            final String deviceId = request.params(":id");
-            log.info("Reset device {} status", deviceId);
-            return deviceService.resetStatus(fromString(deviceId));
-        });
-    }
-
-    public void setId() {
-        get("/setId/:id/:pin", (request, response) -> {
-            final String newId = request.params(":id");
-            final String pin = request.params(":pin");
-            log.info("Setting new id {}", newId);
-            return deviceService.setId(fromString(newId), Integer.parseInt(pin));
-        });
-    }
-
-    public void push() {
-        get("/push/:id", (request, response) -> {
-            final String deviceId = request.params(":id");
-            log.info("Push device {} button", deviceId);
-            return deviceService.push(fromString(deviceId));
-        });
-    }
-
-    public void ping() {
-        get("/ping", (request, response) -> {
-            log.info("ping");
-            return deviceService.ping();
-        });
+    public void runTasks() {
+        final Reflections reflections = new Reflections(TASK_PACKAGE);
+        final Set<Class<? extends Task>> tasks = reflections.getSubTypesOf(Task.class);
+        for (final Class<? extends Task> t : tasks) {
+            try {
+                t.getDeclaredConstructor().newInstance().run();
+            } catch (Exception e) {
+                log.error("failed to run task {}", t.getName(), e);
+            }
+        }
+        log.info("{} tasks runned", tasks.size());
     }
 
 }
