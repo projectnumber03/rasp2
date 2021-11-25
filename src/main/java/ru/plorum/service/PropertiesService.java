@@ -6,19 +6,10 @@ import ru.plorum.repository.PropertiesRepository;
 import java.util.List;
 import java.util.UUID;
 
-public enum  PropertiesService {
+public enum PropertiesService {
     INSTANCE;
 
-    private PropertiesRepository propertiesRepository;
-
-    PropertiesService() {
-        try {
-            this.propertiesRepository = new PropertiesRepository();
-            this.propertiesRepository.init();
-        } catch (Exception e) {
-            LogManager.getLogger(this.getClass()).error("unable to initiate properties repository", e);
-        }
-    }
+    private final PropertiesRepository propertiesRepository = PropertiesRepository.INSTANCE;
 
     public Integer getInt(final String key) {
         return propertiesRepository.getInt(key);

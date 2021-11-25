@@ -1,5 +1,6 @@
 package ru.plorum.repository;
 
+import lombok.SneakyThrows;
 import org.apache.commons.configuration2.PropertiesConfiguration;
 import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
 import org.apache.commons.configuration2.builder.fluent.Parameters;
@@ -9,13 +10,15 @@ import org.apache.commons.configuration2.ex.ConfigurationException;
 import java.io.File;
 import java.util.List;
 
-public class PropertiesRepository {
+public enum  PropertiesRepository {
+    INSTANCE;
 
-    private PropertiesConfiguration config;
+    private final FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
 
-    private FileBasedConfigurationBuilder<PropertiesConfiguration> builder;
+    private final PropertiesConfiguration config;
 
-    public void init() throws Exception {
+    @SneakyThrows
+    PropertiesRepository() {
         this.builder = new FileBasedConfigurationBuilder<>(PropertiesConfiguration.class)
                 .configure(new Parameters().fileBased().setFile(new File("application.properties")).setListDelimiterHandler(new DefaultListDelimiterHandler(',')));
         this.config = this.builder.getConfiguration();
