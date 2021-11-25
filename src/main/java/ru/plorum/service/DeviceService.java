@@ -60,6 +60,17 @@ public enum DeviceService {
         }
     }
 
+    public String resetStatus(int pin) {
+        try {
+            final Device device = devices.get(pin - 1);
+            device.setStatus(Device.Status.STANDBY);
+            return getStatus(device.getId());
+        } catch (Exception e) {
+            log.error("unable to set device status", e);
+            return "";
+        }
+    }
+
     public String lightOn() {
         Led.INSTANCE.high(true);
         return getAll();

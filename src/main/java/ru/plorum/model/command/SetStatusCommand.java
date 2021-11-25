@@ -18,7 +18,11 @@ public class SetStatusCommand implements Command {
         return (request, response) -> {
             final String deviceId = request.params(":id");
             LogManager.getLogger(this.getClass()).info("Reset device {} status", deviceId);
-            return DeviceService.INSTANCE.resetStatus(fromString(deviceId));
+            try {
+                return DeviceService.INSTANCE.resetStatus(fromString(deviceId));
+            } catch (Exception e) {
+                return DeviceService.INSTANCE.resetStatus(Integer.parseInt(deviceId));
+            }
         };
     }
 
