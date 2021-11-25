@@ -1,7 +1,6 @@
 package ru.plorum.controller;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import org.reflections.Reflections;
 import ru.plorum.model.command.Command;
 import ru.plorum.model.task.Task;
@@ -12,10 +11,9 @@ import java.util.Set;
 
 import static spark.Spark.port;
 
+@Log4j2
 public class MainController {
-
-    private static final Logger log = LogManager.getLogger(MainController.class);
-
+    
     private static final String COMMAND_PACKAGE = "ru.plorum.model.command";
 
     private static final String TASK_PACKAGE = "ru.plorum.model.task";

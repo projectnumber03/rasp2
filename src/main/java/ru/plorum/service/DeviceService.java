@@ -3,8 +3,7 @@ package ru.plorum.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 import ru.plorum.exception.DeviceNotFoundException;
 import ru.plorum.model.Device;
 import ru.plorum.model.Led;
@@ -14,10 +13,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+@Log4j2
 public enum DeviceService {
     INSTANCE;
-
-    private final Logger log = LogManager.getLogger(DeviceService.class);
 
     final List<String> buttonPins = PropertiesService.INSTANCE.getStringList("button.pins");
 

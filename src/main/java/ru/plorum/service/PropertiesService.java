@@ -1,7 +1,6 @@
 package ru.plorum.service;
 
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import ru.plorum.repository.PropertiesRepository;
 
 import java.util.List;
@@ -10,8 +9,6 @@ import java.util.UUID;
 public enum  PropertiesService {
     INSTANCE;
 
-    private final Logger log = LogManager.getLogger(PropertiesService.class);
-
     private PropertiesRepository propertiesRepository;
 
     PropertiesService() {
@@ -19,7 +16,7 @@ public enum  PropertiesService {
             this.propertiesRepository = new PropertiesRepository();
             this.propertiesRepository.init();
         } catch (Exception e) {
-            log.error("unable to initiate properties repository", e);
+            LogManager.getLogger(this.getClass()).error("unable to initiate properties repository", e);
         }
     }
 
@@ -43,7 +40,7 @@ public enum  PropertiesService {
         try {
             propertiesRepository.updateDevicesId(values);
         } catch (Exception e) {
-            log.error("unable to update devices id", e);
+            LogManager.getLogger(this.getClass()).error("unable to update devices id", e);
         }
     }
 
