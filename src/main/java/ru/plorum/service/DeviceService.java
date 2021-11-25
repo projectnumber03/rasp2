@@ -61,7 +61,7 @@ public enum DeviceService {
     }
 
     public String lightOn() {
-        Led.INSTANCE.high();
+        Led.INSTANCE.high(true);
         return getAll();
     }
 

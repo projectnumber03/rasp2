@@ -14,10 +14,7 @@ public class MonitorAlertsTask implements Task {
     @Override
     public Runnable getBody() {
         return () -> {
-            if (PropertiesService.INSTANCE.getBoolean("fake.devices")) return;
-            if (Led.INSTANCE.isLightOn()) {
-                return;
-            }
+            if (PropertiesService.INSTANCE.getBoolean("fake.devices") || Led.INSTANCE.isLocked()) return;
             if (getDevices().stream().map(Device::getStatus).anyMatch(Device.Status.ALERT::equals)) {
                 Led.INSTANCE.high();
                 return;
