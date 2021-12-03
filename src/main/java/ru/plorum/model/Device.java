@@ -5,6 +5,7 @@ import com.hazelcast.client.HazelcastClient;
 import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleService;
+import com.hazelcast.jet.datamodel.Tuple3;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import lombok.AccessLevel;
@@ -51,7 +52,7 @@ public class Device {
         this.buttonPin = buttonPin;
         this.status = Status.STANDBY;
         this.hazelcastInstanceClient = HazelcastClient.newHazelcastClient(getHazelCastConfig(PropertiesService.INSTANCE.getString("server.address")));
-        this.id = getId(id, buttonPin);
+        this.id = getId(id);
         if (PropertiesService.INSTANCE.getBoolean("fake.devices")) return;
         this.gpio = GpioFactory.getInstance();
         this.button = gpio.provisionDigitalInputPin(RaspiPin.getPinByName(buttonPin), PinPullResistance.PULL_DOWN);
@@ -65,14 +66,15 @@ public class Device {
     }
 
     public void refreshId() {
-        setId(getId(this.id, this.buttonPin));
+        setId(getId(this.id));
     }
 
-    private UUID getId(final UUID id, final String buttonPin) {
-        final Map<String, Map<Integer, UUID>> devices = this.hazelcastInstanceClient.getMap("devices");
-        final List<String> pins = PropertiesService.INSTANCE.getStringList("button.pins");
-        return Optional.ofNullable(devices.getOrDefault(String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port")), Collections.emptyMap())
-                .getOrDefault(pins.indexOf(buttonPin) + 1, null)).orElse(id);
+    private UUID getId(final UUID id) {
+        final Map<String, Map<Integer, UUID>> deviceGroups = this.hazelcastInstanceClient.getMap("devices");
+        final String formattedDeviceIp = String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port"));
+        final Map<Integer, UUID> deviceGroup = deviceGroups.getOrDefault(formattedDeviceIp, Collections.emptyMap());
+        final UUID deviceId = deviceGroup.getOrDefault(getPin(), null);
+        return Optional.ofNullable(deviceId).orElse(id);
     }
 
     private String getIp() {
@@ -84,11 +86,21 @@ public class Device {
         }
     }
 
+    private int getPin() {
+        return PropertiesService.INSTANCE.getStringList("button.pins").indexOf(buttonPin) + 1;
+    }
+
     public void sendAlertEvent() {
-        if (Optional.ofNullable(hazelcastInstanceClient).map(HazelcastInstance::getLifecycleService).map(LifecycleService::isRunning).orElse(false)) {
-            final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
-            map.put(this.id, LocalDateTime.now());
-        }
+        if (!isHazelcastRunning()) return;
+        final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
+        map.put(this.id, LocalDateTime.now());
+    }
+
+    public void sendNewDeviceEvent() {
+        if (!isHazelcastRunning()) return;
+        final List<Tuple3<UUID, String, Integer>> newDevices = this.hazelcastInstanceClient.getList("newDevices");
+        final String formattedDeviceIp = String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port"));
+        newDevices.add(Tuple3.tuple3(id, formattedDeviceIp, getPin()));
     }
 
     private ClientConfig getHazelCastConfig(final String serverAddress) {
@@ -105,6 +117,13 @@ public class Device {
     public void push() {
         sendAlertEvent();
         setStatus(Status.ALERT);
+    }
+
+    private Boolean isHazelcastRunning() {
+        return Optional.ofNullable(hazelcastInstanceClient)
+                .map(HazelcastInstance::getLifecycleService)
+                .map(LifecycleService::isRunning)
+                .orElse(false);
     }
 
     public enum Status {

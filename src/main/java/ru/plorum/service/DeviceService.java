@@ -20,7 +20,10 @@ public enum DeviceService {
     final List<String> buttonPins = PropertiesService.INSTANCE.getStringList("button.pins");
 
     @Getter
-    private final List<Device> devices = IntStream.range(0, buttonPins.size()).boxed().map(i -> new Device(PropertiesService.INSTANCE.getDeviceId(i), buttonPins.get(i))).collect(Collectors.toList());
+    private final List<Device> devices = IntStream.range(0, buttonPins.size()).boxed()
+            .map(i -> new Device(PropertiesService.INSTANCE.getDeviceId(i), buttonPins.get(i)))
+            .peek(Device::sendNewDeviceEvent)
+            .collect(Collectors.toList());
 
     private Device getDeviceById(final UUID id) throws DeviceNotFoundException {
         return devices.stream().filter(d -> d.getId().equals(id)).findAny().orElseThrow(DeviceNotFoundException::new);
