@@ -6,6 +6,7 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleService;
 import com.hazelcast.jet.datamodel.Tuple3;
+import com.hazelcast.jet.datamodel.Tuple4;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import lombok.AccessLevel;
@@ -92,15 +93,22 @@ public class Device {
 
     public void sendAlertEvent() {
         if (!isHazelcastRunning()) return;
-        final Map<UUID, LocalDateTime> map = hazelcastInstanceClient.getMap("alerts");
-        map.put(this.id, LocalDateTime.now());
+        final Map<UUID, LocalDateTime> alerts = hazelcastInstanceClient.getMap("alerts");
+        alerts.put(this.id, LocalDateTime.now());
     }
 
     public void sendNewDeviceEvent() {
         if (!isHazelcastRunning()) return;
-        final List<Tuple3<UUID, String, Integer>> newDevices = this.hazelcastInstanceClient.getList("newDevices");
+        final List<Tuple4<UUID, String, Integer, Integer>> newDevices = this.hazelcastInstanceClient.getList("newDevices");
         final String formattedDeviceIp = String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port"));
-        newDevices.add(Tuple3.tuple3(id, formattedDeviceIp, getPin()));
+        final Integer healthCheckTimeout = PropertiesService.INSTANCE.getInt("healthcheck.timeout");
+        newDevices.add(Tuple4.tuple4(id, formattedDeviceIp, getPin(), healthCheckTimeout));
+    }
+
+    public void sendHealthCheckEvent() {
+        if (!isHazelcastRunning()) return;
+        final List<Tuple3<UUID, UUID, LocalDateTime>> healthChecks = hazelcastInstanceClient.getList("healthChecks");
+        healthChecks.add(Tuple3.tuple3(UUID.randomUUID(), this.id, LocalDateTime.now()));
     }
 
     private ClientConfig getHazelCastConfig(final String serverAddress) {

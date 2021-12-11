@@ -44,6 +44,7 @@ public class MainController {
         final Set<Class<? extends Task>> tasks = reflections.getSubTypesOf(Task.class);
         for (final Class<? extends Task> t : tasks) {
             try {
+
                 t.getDeclaredConstructor().newInstance().run();
             } catch (Exception e) {
                 log.error("failed to run task {}", t.getName(), e);
