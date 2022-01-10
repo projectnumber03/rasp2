@@ -6,7 +6,7 @@ import com.hazelcast.client.config.ClientConfig;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.LifecycleService;
 import com.hazelcast.jet.datamodel.Tuple3;
-import com.hazelcast.jet.datamodel.Tuple4;
+import com.hazelcast.jet.datamodel.Tuple5;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import lombok.AccessLevel;
@@ -99,10 +99,11 @@ public class Device {
 
     public void sendNewDeviceEvent() {
         if (!isHazelcastRunning()) return;
-        final List<Tuple4<UUID, String, Integer, Integer>> newDevices = this.hazelcastInstanceClient.getList("newDevices");
+        final List<Tuple5<UUID, String, Integer, Integer, String>> newDevices = this.hazelcastInstanceClient.getList("newDevices");
         final String formattedDeviceIp = String.format("%s:%s", getIp(), PropertiesService.INSTANCE.getString("application.port"));
         final Integer healthCheckTimeout = PropertiesService.INSTANCE.getInt("healthcheck.timeout");
-        newDevices.add(Tuple4.tuple4(id, formattedDeviceIp, getPin(), healthCheckTimeout));
+        final String name = PropertiesService.INSTANCE.getString("device.name");
+        newDevices.add(Tuple5.tuple5(id, formattedDeviceIp, getPin(), healthCheckTimeout, name));
     }
 
     public void sendHealthCheckEvent() {
