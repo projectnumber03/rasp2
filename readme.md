@@ -35,6 +35,18 @@ button.pins
 ```
 led.pins
 ```
+Режим отладки (true/false)
+```
+fake.devices
+```
+Интервал отправки healthcheck устройства (в секундах)
+```
+healthcheck.timeout
+```
+Имя устройства
+```
+device.name
+```
 #### Статусы устройств
 Работает, режим ожидания
 ```
