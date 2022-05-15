@@ -10,7 +10,7 @@ public class SetStatusCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/setStatus/:id";
+        return "/status/:id";
     }
 
     @Override

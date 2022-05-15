@@ -8,7 +8,7 @@ public class LightOffCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/lightOff";
+        return "/light/off";
     }
 
     @Override

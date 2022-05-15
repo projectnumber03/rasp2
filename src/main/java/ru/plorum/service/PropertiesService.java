@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public enum PropertiesService {
+
     INSTANCE;
 
     private final PropertiesRepository propertiesRepository = PropertiesRepository.INSTANCE;

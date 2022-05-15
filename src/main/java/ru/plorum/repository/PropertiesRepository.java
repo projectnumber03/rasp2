@@ -11,6 +11,7 @@ import java.io.File;
 import java.util.List;
 
 public enum  PropertiesRepository {
+
     INSTANCE;
 
     private final FileBasedConfigurationBuilder<PropertiesConfiguration> builder;

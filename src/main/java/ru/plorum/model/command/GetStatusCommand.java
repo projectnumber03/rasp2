@@ -10,7 +10,7 @@ public class GetStatusCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/getStatus/:id";
+        return "/device/:id";
     }
 
     @Override
@@ -18,7 +18,7 @@ public class GetStatusCommand implements Command {
         return (request, response) -> {
             final String deviceId = request.params(":id");
             LogManager.getLogger(this.getClass()).info("Getting device {} status", deviceId);
-            return DeviceService.INSTANCE.getStatus(fromString(deviceId));
+            return DeviceService.INSTANCE.getById(fromString(deviceId));
         };
     }
 

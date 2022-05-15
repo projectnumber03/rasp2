@@ -10,7 +10,7 @@ public class SetIdCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/setId/:id/:pin";
+        return "/identity/:pin/:id";
     }
 
     @Override

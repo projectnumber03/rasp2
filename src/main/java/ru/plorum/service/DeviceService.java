@@ -15,6 +15,7 @@ import java.util.stream.IntStream;
 
 @Log4j2
 public enum DeviceService {
+
     INSTANCE;
 
     final List<String> buttonPins = PropertiesService.INSTANCE.getStringList("button.pins");
@@ -38,7 +39,7 @@ public enum DeviceService {
         }
     }
 
-    public String getStatus(final UUID id) {
+    public String getById(final UUID id) {
         try {
             return new ObjectMapper().writeValueAsString(getDeviceById(id));
         } catch (DeviceNotFoundException e) {
@@ -54,7 +55,7 @@ public enum DeviceService {
         try {
             final Device device = getDeviceById(id);
             device.setStatus(Device.Status.STANDBY);
-            return getStatus(id);
+            return getById(id);
         } catch (DeviceNotFoundException e) {
             log.error("unable to set device status", e);
             return "";
@@ -65,7 +66,7 @@ public enum DeviceService {
         try {
             final Device device = devices.get(pin - 1);
             device.setStatus(Device.Status.STANDBY);
-            return getStatus(device.getId());
+            return getById(device.getId());
         } catch (Exception e) {
             log.error("unable to set device status", e);
             return "";
@@ -87,7 +88,7 @@ public enum DeviceService {
             final Device device = devices.get(pin - 1);
             device.setId(newId);
             PropertiesService.INSTANCE.updateDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
-            return getStatus(newId);
+            return getById(newId);
         } catch (Exception e) {
             log.error("unable to set id", e);
             return "";
@@ -98,7 +99,7 @@ public enum DeviceService {
         try {
             final Device device = getDeviceById(id);
             device.push();
-            return getStatus(id);
+            return getById(id);
         } catch (DeviceNotFoundException e) {
             log.error("unable to push device button", e);
             return "";
@@ -109,7 +110,7 @@ public enum DeviceService {
         try {
             final Device device = devices.get(pin - 1);
             device.push();
-            return getStatus(device.getId());
+            return getById(device.getId());
         } catch (Exception e) {
             log.error("unable to push device button", e);
             return "";

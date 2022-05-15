@@ -8,7 +8,7 @@ public class GetDeviceListCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/getDeviceList";
+        return "/devices";
     }
 
     @Override

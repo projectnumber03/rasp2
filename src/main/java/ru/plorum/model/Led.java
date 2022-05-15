@@ -7,6 +7,7 @@ import lombok.Getter;
 import ru.plorum.service.PropertiesService;
 
 public enum Led {
+
     INSTANCE;
 
     private GpioPinDigitalOutput led;

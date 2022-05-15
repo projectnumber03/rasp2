@@ -10,7 +10,7 @@ public class ButtonPushCommand implements Command {
 
     @Override
     public String getUrl() {
-        return "/push/:id";
+        return "/button/:id";
     }
 
     @Override
