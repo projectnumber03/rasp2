@@ -34,7 +34,7 @@ public enum DeviceService {
         try {
             return new ObjectMapper().writeValueAsString(devices);
         } catch (JsonProcessingException e) {
-            log.error("unable to marshal devices", e);
+            log.error("{}: unable to marshal devices", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }
@@ -43,10 +43,10 @@ public enum DeviceService {
         try {
             return new ObjectMapper().writeValueAsString(getDeviceById(id));
         } catch (DeviceNotFoundException e) {
-            log.error("unable to get device status", e);
+            log.error("{}: unable to get device status", PropertiesService.INSTANCE.getDeviceName(),  e);
             return "";
         } catch (JsonProcessingException e) {
-            log.error("unable to marshal device status", e);
+            log.error("{}: unable to marshal device status", PropertiesService.INSTANCE.getDeviceName(),  e);
             return "";
         }
     }
@@ -57,7 +57,7 @@ public enum DeviceService {
             device.setStatus(Device.Status.STANDBY);
             return getById(id);
         } catch (DeviceNotFoundException e) {
-            log.error("unable to set device status", e);
+            log.error("{}: unable to set device status", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }
@@ -68,7 +68,7 @@ public enum DeviceService {
             device.setStatus(Device.Status.STANDBY);
             return getById(device.getId());
         } catch (Exception e) {
-            log.error("unable to set device status", e);
+            log.error("{}: unable to set device status", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }
@@ -90,7 +90,7 @@ public enum DeviceService {
             PropertiesService.INSTANCE.updateDevicesId(this.devices.stream().map(Device::getId).map(UUID::toString).collect(Collectors.toList()));
             return getById(newId);
         } catch (Exception e) {
-            log.error("unable to set id", e);
+            log.error("{}: unable to set id", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }
@@ -101,7 +101,7 @@ public enum DeviceService {
             device.push();
             return getById(id);
         } catch (DeviceNotFoundException e) {
-            log.error("unable to push device button", e);
+            log.error("{}: unable to push device button", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }
@@ -112,7 +112,7 @@ public enum DeviceService {
             device.push();
             return getById(device.getId());
         } catch (Exception e) {
-            log.error("unable to push device button", e);
+            log.error("{}: unable to push device button", PropertiesService.INSTANCE.getDeviceName(), e);
             return "";
         }
     }

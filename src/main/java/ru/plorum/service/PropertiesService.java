@@ -44,4 +44,8 @@ public enum PropertiesService {
         }
     }
 
+    public String getDeviceName() {
+        return getString("device.name");
+    }
+
 }
